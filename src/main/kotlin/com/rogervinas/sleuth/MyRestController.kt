@@ -6,7 +6,10 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class MyRestController(private val producer: MyKafkaProducer) {
+class MyRestController(
+        private val producer: MyKafkaProducer,
+        private val feign: MyFeignClient
+) {
 
     val logger = LoggerFactory.getLogger(MyRestController::class.java)
 
@@ -20,6 +23,13 @@ class MyRestController(private val producer: MyKafkaProducer) {
     @GetMapping("/request2")
     fun request2(@RequestParam("payload") payload: String) : String {
         logger.info(">>> Request2 $payload")
+        feign.request3(payload)
+        return "ok"
+    }
+
+    @GetMapping("/request3")
+    fun request3(@RequestParam("payload") payload: String) : String {
+        logger.info(">>> Request3 $payload")
         return "ok"
     }
 }

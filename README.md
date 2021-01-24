@@ -9,13 +9,13 @@ Demo testing trace propagation across this flow:
         |
   RestController /request1
         |
-   KafkaProducer
+   KafkaProducer (Spring Cloud Stream Functional)
         |
    ------------
      my.topic
    ------------
         |
-   KafkaConsumer
+   KafkaConsumer (Spring Cloud Stream Functional)
         | 
    RestTemplate
         |
