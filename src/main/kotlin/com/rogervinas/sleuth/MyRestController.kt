@@ -16,4 +16,10 @@ class MyRestController(private val producer: MyKafkaProducer) {
         producer.produce(payload)
         return "ok"
     }
+
+    @GetMapping("/request2")
+    fun request2(@RequestParam("payload") payload: String) : String {
+        logger.info(">>> Request2 $payload")
+        return "ok"
+    }
 }
