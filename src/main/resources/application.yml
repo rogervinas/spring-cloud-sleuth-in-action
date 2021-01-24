@@ -1,0 +1,23 @@
+server:
+  port: 8080
+
+logging:
+  level:
+    com.rogervinas: INFO
+
+spring:
+  application:
+    name: "sleuth-demo"
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: "localhost:9094"
+      bindings:
+        consumer-in-0:
+          group: ${spring.application.name}
+          destination: "my.topic"
+        producer-out-0:
+          destination: "my.topic"
+    function:
+      definition: consumer;producer
