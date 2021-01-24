@@ -48,13 +48,14 @@ class ApplicationShould {
         val logLines = await()
                 .atMost(TEN_SECONDS)
                 .pollDelay(ONE_SECOND)
-                .until({ parseLogLines(log) }, { logLines -> logLines.size >= 5 })
+                .until({ parseLogLines(log) }, { it.size >= 6 })
 
         assertThatLogLineContainsMessageAndTraceId(logLines[0], "Request1 hello", traceId)
         assertThatLogLineContainsMessageAndTraceId(logLines[1], "KafkaProducer hello", traceId)
         assertThatLogLineContainsMessageAndTraceId(logLines[2], "KafkaConsumer hello", traceId)
         assertThatLogLineContainsMessageAndTraceId(logLines[3], "Request2 hello", traceId)
         assertThatLogLineContainsMessageAndTraceId(logLines[4], "Request3 hello", traceId)
+        assertThatLogLineContainsMessageAndTraceId(logLines[5], "Request4 hello", traceId)
     }
 
     private fun assertThatLogLineContainsMessageAndTraceId(logLine: LogLine, msg: String, traceId: String) {
