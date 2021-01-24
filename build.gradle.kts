@@ -23,6 +23,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
 	implementation("org.springframework.cloud:spring-cloud-starter-sleuth")
+	implementation("org.springframework.cloud:spring-cloud-sleuth-zipkin")
 	implementation("org.springframework.cloud:spring-cloud-starter-stream-kafka")
 	implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
@@ -37,12 +38,14 @@ dependencyManagement {
 		mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
 	}
 }
+
 tasks.withType<KotlinCompile> {
 	kotlinOptions {
 		freeCompilerArgs = listOf("-Xjsr305=strict")
 		jvmTarget = "11"
 	}
 }
+
 tasks.withType<Test> {
 	useJUnitPlatform()
 }

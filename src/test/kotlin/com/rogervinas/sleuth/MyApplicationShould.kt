@@ -16,6 +16,7 @@ import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus.OK
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.web.client.RestTemplate
 import java.util.regex.Pattern
@@ -23,6 +24,7 @@ import java.util.stream.Collectors
 
 @SpringBootTest(webEnvironment = DEFINED_PORT)
 @ExtendWith(SpringExtension::class, OutputCaptureExtension::class)
+@ActiveProfiles("docker-compose")
 class ApplicationShould {
 
     @LocalServerPort

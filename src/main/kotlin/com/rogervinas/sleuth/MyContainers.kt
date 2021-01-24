@@ -1,5 +1,6 @@
 package com.rogervinas.sleuth
 
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import org.testcontainers.containers.DockerComposeContainer
 import org.testcontainers.containers.wait.strategy.Wait.forListeningPort
@@ -10,6 +11,7 @@ import javax.annotation.PostConstruct
 import javax.annotation.PreDestroy
 
 @Component
+@Profile("docker-compose")
 class MyContainers {
 
     private val KAFKA = "kafka"
@@ -17,6 +19,9 @@ class MyContainers {
 
     private val ZOOKEEPER = "zookeeper"
     private val ZOOKEEPER_PORT = 2181
+
+    private val ZIPKIN = "zipkin"
+    private val ZIPKIN_PORT = 9411
 
     private val container = DockerComposeContainer<Nothing>(File("docker-compose.yml"))
             .apply { withLocalCompose(true) }
@@ -34,6 +39,7 @@ class MyContainers {
                         .apply { withStrategy(forLogMessage(".*binding to port.*", 1)) }
                 )
             }
+            .apply { withExposedService(ZIPKIN, ZIPKIN_PORT) }
 
     @PostConstruct
     fun start() = container.start()
