@@ -33,3 +33,8 @@ Demo testing trace propagation across this flow:
         |
        End
 ```
+
+## Documentation
+
+* [Spring Cloud Sleuth Reference Documentation](https://docs.spring.io/spring-cloud-sleuth/docs/current-SNAPSHOT/reference/html/index.html)
+* [Spring Cloud Sleuth customization](https://docs.spring.io/spring-cloud-sleuth/docs/current-SNAPSHOT/reference/html/integrations.html#sleuth-integration)
