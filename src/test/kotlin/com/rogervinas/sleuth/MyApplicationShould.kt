@@ -48,14 +48,15 @@ class ApplicationShould {
         val logLines = await()
                 .atMost(TEN_SECONDS)
                 .pollDelay(ONE_SECOND)
-                .until({ parseLogLines(log) }, { it.size >= 6 })
+                .until({ parseLogLines(log) }, { it.size >= 7 })
 
-        assertThatLogLineContainsMessageAndTraceId(logLines[0], "Request1 hello", traceId)
+        assertThatLogLineContainsMessageAndTraceId(logLines[0], "RestRequest1 hello", traceId)
         assertThatLogLineContainsMessageAndTraceId(logLines[1], "KafkaProducer hello", traceId)
         assertThatLogLineContainsMessageAndTraceId(logLines[2], "KafkaConsumer hello", traceId)
-        assertThatLogLineContainsMessageAndTraceId(logLines[3], "Request2 hello", traceId)
-        assertThatLogLineContainsMessageAndTraceId(logLines[4], "Request3 hello", traceId)
-        assertThatLogLineContainsMessageAndTraceId(logLines[5], "Request4 hello", traceId)
+        assertThatLogLineContainsMessageAndTraceId(logLines[3], "RestRequest2 hello", traceId)
+        assertThatLogLineContainsMessageAndTraceId(logLines[4], "RestRequest3 hello", traceId)
+        assertThatLogLineContainsMessageAndTraceId(logLines[5], "RestRequest4 hello", traceId)
+        assertThatLogLineContainsMessageAndTraceId(logLines[6], "AsyncService hello", traceId)
     }
 
     private fun assertThatLogLineContainsMessageAndTraceId(logLine: LogLine, msg: String, traceId: String) {
@@ -68,7 +69,7 @@ class ApplicationShould {
 
     private fun parseLogLines(log: CapturedOutput): List<LogLine> {
         return log.all.split(System.lineSeparator()).stream()
-                .map { Pattern.compile(">>> (.+) - traceId (.+) spanId (.+)").matcher(it) }
+                .map { Pattern.compile(">>> (.+) - traceId (.+) spanId (.+) - .+").matcher(it) }
                 .filter { it.matches() }
                 .map { LogLine(it.group(1), it.group(2), it.group(3)) }
                 .collect(Collectors.toList())
