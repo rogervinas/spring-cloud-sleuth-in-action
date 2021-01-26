@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 import org.springframework.boot.test.system.CapturedOutput
 import org.springframework.boot.test.system.OutputCaptureExtension
 import org.springframework.boot.web.server.LocalServerPort
@@ -16,6 +15,7 @@ import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus.OK
+import org.springframework.http.ResponseEntity
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.web.client.RestTemplate
@@ -25,7 +25,7 @@ import java.util.stream.Collectors
 @SpringBootTest(webEnvironment = DEFINED_PORT)
 @ExtendWith(SpringExtension::class, OutputCaptureExtension::class)
 @ActiveProfiles("docker-compose")
-class ApplicationShould {
+class MyApplicationShould {
 
     @LocalServerPort
     var port: Int = 0
@@ -37,12 +37,7 @@ class ApplicationShould {
         val traceId = "edb77ece416b3196"
         val spanId = "c58ac2aa66d238b9"
 
-        val requestUrl = "http://localhost:$port/request1?payload=hello"
-        val requestHeaders = HttpHeaders()
-        requestHeaders["X-B3-TraceId"] = traceId
-        requestHeaders["X-B3-SpanId"] = spanId
-        val request = HttpEntity<Unit>(requestHeaders)
-        val response = rest.exchange(requestUrl, HttpMethod.GET, request, String::class.java)
+        val response = request1(traceId, spanId)
 
         assertThat(response.statusCode).isEqualTo(OK)
         assertThat(response.body).isEqualTo("ok")
@@ -59,6 +54,15 @@ class ApplicationShould {
         assertThatLogLineContainsMessageAndTraceId(logLines[4], "RestRequest3 hello", traceId)
         assertThatLogLineContainsMessageAndTraceId(logLines[5], "RestRequest4 hello", traceId)
         assertThatLogLineContainsMessageAndTraceId(logLines[6], "AsyncService hello", traceId)
+    }
+
+    private fun request1(traceId: String, spanId: String): ResponseEntity<String> {
+        val requestUrl = "http://localhost:$port/request1?payload=hello"
+        val requestHeaders = HttpHeaders()
+        requestHeaders["X-B3-TraceId"] = traceId
+        requestHeaders["X-B3-SpanId"] = spanId
+        val request = HttpEntity<Unit>(requestHeaders)
+        return rest.exchange(requestUrl, HttpMethod.GET, request, String::class.java)
     }
 
     private fun assertThatLogLineContainsMessageAndTraceId(logLine: LogLine, msg: String, traceId: String) {
