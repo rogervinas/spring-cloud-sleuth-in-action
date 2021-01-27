@@ -74,7 +74,7 @@ Just adding the **sleuth** dependency will enable tracing by default in any of t
 
 ### Logging
 
-For the demo we use a plain text **logback** configuration to log **traceId** and **spanId** values but maybe in production you would use the [logstash-logback-encoder](https://github.com/logstash/logstash-logback-encoder) to generate logs in JSON format and send them to an [ELK](https://www.elastic.co/what-is/elk-stack)
+We need to add **traceId** and **spanId** values to the application log. In production we would use the [logstash-logback-encoder](https://github.com/logstash/logstash-logback-encoder) to generate logs in JSON format and send them to an [ELK](https://www.elastic.co/what-is/elk-stack) but for the demo we use this plain text [logback layout](http://logback.qos.ch/manual/layouts.html):
 
 ```xml
 <configuration>
@@ -240,7 +240,7 @@ class MyAsyncService {
 
 ## Zipkin
 
-For this demo we will send to **zipkin** (sample) **all** the requests but in production you would only send a small percentage
+In production we would send to [zipkin](https://zipkin.io/) a small percentage of all the traces (sampling) but for the demo we will send all of them:
 
 ```yaml
 spring:
