@@ -1,3 +1,5 @@
+![CI](https://github.com/rogervinas/spring-cloud-sleuth-in-action/actions/workflows/gradle.yml/badge.svg)
+
 # Spring Cloud Sleuth in action
 
 [Spring Cloud Sleuth](https://docs.spring.io/spring-cloud-sleuth/docs/current/reference/html/index.html) is the solution for [distributed tracing](https://opentracing.io/docs/overview/what-is-tracing/) provided by **Spring** and comes with a bunch of useful [integrations](https://docs.spring.io/spring-cloud-sleuth/docs/current/reference/html/integrations.html#sleuth-integration) out of the box
