@@ -15,7 +15,7 @@ import java.util.function.Supplier
 @Component("producer")
 class MyKafkaProducer(private val beanFactory: BeanFactory) : Supplier<Flux<Message<String>>> {
 
-    val logger = LoggerFactory.getLogger(MyKafkaConsumer::class.java)
+    val logger = LoggerFactory.getLogger(MyKafkaProducer::class.java)
 
     val sink = Sinks.many().unicast().onBackpressureBuffer<Message<String>>()
 
