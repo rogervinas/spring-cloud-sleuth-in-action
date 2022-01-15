@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.web.client.RestTemplate
+import java.util.function.Consumer
 import java.util.regex.Pattern
 import java.util.stream.Collectors
 
@@ -66,11 +67,11 @@ class MyApplicationShould {
     }
 
     private fun assertThatLogLineContainsMessageAndTraceId(logLine: LogLine, msg: String, traceId: String) {
-        assertThat(logLine).satisfies {
+        assertThat(logLine).satisfies(Consumer {
             assertThat(it.msg).isEqualTo(msg)
             assertThat(it.traceId).isEqualTo(traceId)
             assertThat(it.spanId).isNotBlank
-        }
+        })
     }
 
     private fun parseLogLines(log: CapturedOutput): List<LogLine> {
