@@ -271,7 +271,7 @@ One easy way to test the demo is running a SpringBootTest with an [OutputCapture
 
 ```kotlin
 @SpringBootTest(webEnvironment = DEFINED_PORT)
-@ExtendWith(SpringExtension::class, OutputCaptureExtension::class)
+@ExtendWith(OutputCaptureExtension::class)
 @ActiveProfiles("docker-compose")
 class MyApplicationShould {
     @Test
