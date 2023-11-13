@@ -24,7 +24,7 @@ import java.util.regex.Pattern
 import java.util.stream.Collectors
 
 @SpringBootTest(webEnvironment = DEFINED_PORT)
-@ExtendWith(SpringExtension::class, OutputCaptureExtension::class)
+@ExtendWith(OutputCaptureExtension::class)
 @ActiveProfiles("docker-compose")
 class MyApplicationShould {
 
