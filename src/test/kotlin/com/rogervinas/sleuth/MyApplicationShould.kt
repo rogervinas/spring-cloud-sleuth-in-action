@@ -10,14 +10,13 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT
 import org.springframework.boot.test.system.CapturedOutput
 import org.springframework.boot.test.system.OutputCaptureExtension
-import org.springframework.boot.web.server.LocalServerPort
+import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus.OK
 import org.springframework.http.ResponseEntity
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.web.client.RestTemplate
 import java.util.function.Consumer
 import java.util.regex.Pattern
@@ -44,9 +43,9 @@ class MyApplicationShould {
         assertThat(response.body).isEqualTo("ok")
 
         val logLines = await()
-                .atMost(TEN_SECONDS)
-                .pollDelay(ONE_SECOND)
-                .until({ parseLogLines(log) }, { it.size >= 7 })
+            .atMost(TEN_SECONDS)
+            .pollDelay(ONE_SECOND)
+            .until({ parseLogLines(log) }, { it.size >= 7 })
 
         assertThatLogLineContainsMessageAndTraceId(logLines[0], "RestRequest1 hello", traceId)
         assertThatLogLineContainsMessageAndTraceId(logLines[1], "KafkaProducer hello", traceId)
@@ -76,10 +75,10 @@ class MyApplicationShould {
 
     private fun parseLogLines(log: CapturedOutput): List<LogLine> {
         return log.all.split(System.lineSeparator()).stream()
-                .map { Pattern.compile(">>> (.+) - traceId (.+) spanId (.+) - .+").matcher(it) }
-                .filter { it.matches() }
-                .map { LogLine(it.group(1), it.group(2), it.group(3)) }
-                .collect(Collectors.toList())
+            .map { Pattern.compile(">>> (.+) - traceId (.+) spanId (.+) - .+").matcher(it) }
+            .filter { it.matches() }
+            .map { LogLine(it.group(1), it.group(2), it.group(3)) }
+            .collect(Collectors.toList())
     }
 }
 

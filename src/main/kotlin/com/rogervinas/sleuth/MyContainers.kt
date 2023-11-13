@@ -2,10 +2,8 @@ package com.rogervinas.sleuth
 
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
-import org.testcontainers.containers.DockerComposeContainer
-import org.testcontainers.containers.wait.strategy.Wait.forListeningPort
+import org.testcontainers.containers.ComposeContainer
 import org.testcontainers.containers.wait.strategy.Wait.forLogMessage
-import org.testcontainers.containers.wait.strategy.WaitAllStrategy
 import java.io.File
 import javax.annotation.PostConstruct
 import javax.annotation.PreDestroy
@@ -14,32 +12,24 @@ import javax.annotation.PreDestroy
 @Profile("docker-compose")
 class MyContainers {
 
-    private val KAFKA = "kafka"
-    private val KAFKA_PORT = 9094
+    companion object {
+        private const val KAFKA = "kafka"
+        private const val KAFKA_PORT = 9094
 
-    private val ZOOKEEPER = "zookeeper"
-    private val ZOOKEEPER_PORT = 2181
+        private const val ZOOKEEPER = "zookeeper"
+        private const val ZOOKEEPER_PORT = 2181
 
-    private val ZIPKIN = "zipkin"
-    private val ZIPKIN_PORT = 9411
+        private const val ZIPKIN = "zipkin"
+        private const val ZIPKIN_PORT = 9411
 
-    private val container = DockerComposeContainer<Nothing>(File("docker-compose.yml"))
-            .apply { withLocalCompose(true) }
-            .apply { withExposedService(KAFKA, KAFKA_PORT) }
-            .apply {
-                waitingFor(KAFKA, WaitAllStrategy(WaitAllStrategy.Mode.WITH_INDIVIDUAL_TIMEOUTS_ONLY)
-                        .apply { withStrategy(forListeningPort()) }
-                        .apply { withStrategy(forLogMessage(".*creating topics.*", 1)) }
-                )
-            }
-            .apply { withExposedService(ZOOKEEPER, ZOOKEEPER_PORT) }
-            .apply {
-                waitingFor(ZOOKEEPER, WaitAllStrategy(WaitAllStrategy.Mode.WITH_INDIVIDUAL_TIMEOUTS_ONLY)
-                        .apply { withStrategy(forListeningPort()) }
-                        .apply { withStrategy(forLogMessage(".*binding to port.*", 1)) }
-                )
-            }
-            .apply { withExposedService(ZIPKIN, ZIPKIN_PORT) }
+        private val container = ComposeContainer(File("docker-compose.yml"))
+            .withLocalCompose(true)
+            .withExposedService(KAFKA, KAFKA_PORT)
+            .waitingFor(KAFKA, forLogMessage(".*creating topics.*", 1))
+            .withExposedService(ZOOKEEPER, ZOOKEEPER_PORT)
+            .waitingFor(ZOOKEEPER, forLogMessage(".*binding to port.*", 1))
+            .withExposedService(ZIPKIN, ZIPKIN_PORT)
+    }
 
     @PostConstruct
     fun start() = container.start()
