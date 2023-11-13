@@ -23,10 +23,10 @@ Let's follow these steps to execute the demo:
     SPRING_PROFILES_ACTIVE=docker-compose ./gradlew bootRun
     ```
 
-* Consume from the **Kafka** topic `my.topic` with [kafkacat](https://github.com/edenhill/kafkacat):
+* Consume from the **Kafka** topic `my.topic` with [kcat](https://github.com/edenhill/kcat):
 
     ```bash
-    kafkacat -b localhost:9094 -C -t my.topic -f '%h %s\n'
+    kcat -b localhost:9094 -C -t my.topic -f '%h %s\n'
     ```
 
 * Execute a request to the first endpoint with [curl](https://curl.se/) or any other tool you like:
@@ -53,7 +53,7 @@ Let's follow these steps to execute the demo:
     >>> AsyncService hello  - traceId aaaaaa1234567890 spanId acccead477b4e1c8 - task-3
     ```
 
-* Check [kafkacat](https://github.com/edenhill/kafkacat) output:
+* Check [kcat](https://github.com/edenhill/kcat) output:
 
     ```
     b3=aaaaaa1234567890-331986280d41ccdc-1,
@@ -102,13 +102,16 @@ Create your @RestController as usual
 @RestController
 class MyRestController {
 
-    val logger = LoggerFactory.getLogger(MyRestController::class.java)
+  companion object {
+    private val LOGGER = LoggerFactory.getLogger(MyRestController::class.java)
+  }
 
-    @GetMapping("/request1")
-    fun request1(@RequestParam("payload") payload: String): String {
-        logger.info(">>> RestRequest1 $payload")
-        return "ok"
-    }
+  @GetMapping("/request1")
+  fun request1(@RequestParam("payload") payload: String): String {
+    LOGGER.info(">>> RestRequest1 $payload")
+    // do more stuff
+    return "ok"
+  }
 }
 ```
 
@@ -139,45 +142,50 @@ In this demo we use [Spring Cloud Stream](https://docs.spring.io/spring-cloud-st
           definition: consumer;producer
     ```
 
-* The consumer is just a @Bean implementing `Consumer<Message<PAYLOAD>>`:
+* The consumer is just a @Bean implementing a lambda consuming a `<Message<PAYLOAD>>`:
 
     ```kotlin
     @Component("consumer")
-    class MyKafkaConsumer: Consumer<Message<String>> {
+    class MyKafkaConsumer: (Message<String>) -> Unit {
     
-        val logger = LoggerFactory.getLogger(MyKafkaConsumer::class.java)
+      companion object {
+        private val LOGGER = LoggerFactory.getLogger(MyKafkaConsumer::class.java)
+      }
     
-        override fun accept(message: Message<String>) {
-            logger.info(">>> KafkaConsumer ${message.payload}")
-        }
+      override fun invoke(message: Message<String>) {
+        LOGGER.info(">>> KafkaConsumer ${message.payload}")
+        // do more stuff
+      }
     }
     ```
 
-* The producer is just a @Bean implementing `Supplier<Flux<Message<PAYLOAD>>>`:
+* The producer is just a @Bean implementing a lambda producing a `Flux<Message<PAYLOAD>>`:
 
     In this case we have to use [MessagingSleuthOperators](https://docs.spring.io/spring-cloud-sleuth/docs/current/reference/html/integrations.html#sleuth-messaging-spring-cloud-function-integration) helper methods in order to preserve the tracing context when using reactive stream functions
 
     ```kotlin
     @Component("producer")
-    class MyKafkaProducer(private val beanFactory: BeanFactory) : Supplier<Flux<Message<String>>> {
+    class MyKafkaProducer(private val beanFactory: BeanFactory) : () -> Flux<Message<String>> {
     
-        val logger = LoggerFactory.getLogger(MyKafkaConsumer::class.java)
+      companion object {
+        private val LOGGER = LoggerFactory.getLogger(MyKafkaProducer::class.java)
+      }
     
-        val sink = Sinks.many().unicast().onBackpressureBuffer<Message<String>>()
+      private val sink = Sinks.many().unicast().onBackpressureBuffer<Message<String>>()
     
-        fun produce(payload: String) {
-            logger.info(">>> KafkaProducer $payload")
-            sink.emitNext(createMessageWithTracing(payload), FAIL_FAST)
-        }
+      fun produce(payload: String) {
+        LOGGER.info(">>> KafkaProducer $payload")
+        sink.emitNext(createMessageWithTracing(payload), FAIL_FAST)
+      }
     
-        private fun createMessageWithTracing(payload: String): Message<String> {
-            return MessagingSleuthOperators.handleOutputMessage(
-                    beanFactory,
-                    MessagingSleuthOperators.forInputMessage(beanFactory, GenericMessage(payload))
-            )
-        }
+      private fun createMessageWithTracing(payload: String): Message<String> {
+        return MessagingSleuthOperators.handleOutputMessage(
+          beanFactory,
+          MessagingSleuthOperators.forInputMessage(beanFactory, GenericMessage(payload))
+        )
+      }
     
-        override fun get() = sink.asFlux()
+      override fun invoke() = sink.asFlux()
     }
     ```
 
@@ -188,8 +196,8 @@ Just create a RestTemplate @Bean and inject it wherever is needed
 ```kotlin
 @Configuration
 class MyConfiguration {
-    @Bean
-    fun restTemplate() = RestTemplate()
+  @Bean
+  fun restTemplate() = RestTemplate()
 }
 ```
 
@@ -233,13 +241,15 @@ class MyApplication
 @Service
 class MyAsyncService {
 
-    val logger = LoggerFactory.getLogger(MyAsyncService::class.java)
+  companion object {
+    private val LOGGER = LoggerFactory.getLogger(MyAsyncService::class.java)
+  }
 
-    @Async
-    fun execute(payload: String): CompletableFuture<String> {
-        logger.info(">>> AsyncService $payload")
-        return CompletableFuture.completedFuture("ok")
-    }
+  @Async   
+  fun execute(payload: String): CompletableFuture<String> {
+    LOGGER.info(">>> AsyncService $payload")
+    return CompletableFuture.completedFuture("ok")
+  }
 }
 ```
 
@@ -277,29 +287,29 @@ One easy way to test the demo is running a SpringBootTest with an [OutputCapture
 @ExtendWith(OutputCaptureExtension::class)
 @ActiveProfiles("docker-compose")
 class MyApplicationShould {
-    @Test
-    fun `propagate tracing`(log: CapturedOutput) {
-        val traceId = "edb77ece416b3196"
-        val spanId = "c58ac2aa66d238b9"
+  @Test
+  fun `propagate tracing`(log: CapturedOutput) {
+    val traceId = "edb77ece416b3196"
+    val spanId = "c58ac2aa66d238b9"
 
-        val response = request1(traceId, spanId)
+    val response = request1(traceId, spanId)
 
-        assertThat(response.statusCode).isEqualTo(OK)
-        assertThat(response.body).isEqualTo("ok")
+    assertThat(response.statusCode).isEqualTo(OK)
+    assertThat(response.body).isEqualTo("ok")
 
-        val logLines = await()
-                .atMost(TEN_SECONDS)
-                .pollDelay(ONE_SECOND)
-                .until({ parseLogLines(log) }, { it.size >= 7 })
+    val logLines = await()
+      .atMost(TEN_SECONDS)
+      .pollDelay(ONE_SECOND)
+      .until({ parseLogLines(log) }, { it.size >= 7 })
 
-        assertThatLogLineContainsMessageAndTraceId(logLines[0], "RestRequest1 hello", traceId)
-        assertThatLogLineContainsMessageAndTraceId(logLines[1], "KafkaProducer hello", traceId)
-        assertThatLogLineContainsMessageAndTraceId(logLines[2], "KafkaConsumer hello", traceId)
-        assertThatLogLineContainsMessageAndTraceId(logLines[3], "RestRequest2 hello", traceId)
-        assertThatLogLineContainsMessageAndTraceId(logLines[4], "RestRequest3 hello", traceId)
-        assertThatLogLineContainsMessageAndTraceId(logLines[5], "RestRequest4 hello", traceId)
-        assertThatLogLineContainsMessageAndTraceId(logLines[6], "AsyncService hello", traceId)
-    }
+    assertThatLogLineContainsMessageAndTraceId(logLines[0], "RestRequest1 hello", traceId)
+    assertThatLogLineContainsMessageAndTraceId(logLines[1], "KafkaProducer hello", traceId)
+    assertThatLogLineContainsMessageAndTraceId(logLines[2], "KafkaConsumer hello", traceId)
+    assertThatLogLineContainsMessageAndTraceId(logLines[3], "RestRequest2 hello", traceId)
+    assertThatLogLineContainsMessageAndTraceId(logLines[4], "RestRequest3 hello", traceId)
+    assertThatLogLineContainsMessageAndTraceId(logLines[5], "RestRequest4 hello", traceId)
+    assertThatLogLineContainsMessageAndTraceId(logLines[6], "AsyncService hello", traceId)
+  }
 }
 ```
 
