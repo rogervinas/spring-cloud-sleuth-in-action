@@ -8,11 +8,13 @@ import java.util.concurrent.CompletableFuture
 @Service
 class MyAsyncService {
 
-    val logger = LoggerFactory.getLogger(MyAsyncService::class.java)
+    companion object {
+        private val LOGGER = LoggerFactory.getLogger(MyAsyncService::class.java)
+    }
 
     @Async
     fun execute(payload: String): CompletableFuture<String> {
-        logger.info(">>> AsyncService $payload")
+        LOGGER.info(">>> AsyncService $payload")
         return CompletableFuture.completedFuture("ok")
     }
 }
