@@ -1,1 +1,1 @@
-rootProject.name = "spring-cloud-sleuth-demo"
+rootProject.name = "spring-cloud-sleuth-in-action"

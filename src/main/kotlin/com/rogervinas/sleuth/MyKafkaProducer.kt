@@ -9,27 +9,28 @@ import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Sinks
 import reactor.core.publisher.Sinks.EmitFailureHandler.FAIL_FAST
-import java.util.function.Supplier
 
 
 @Component("producer")
-class MyKafkaProducer(private val beanFactory: BeanFactory) : Supplier<Flux<Message<String>>> {
+class MyKafkaProducer(private val beanFactory: BeanFactory) : () -> Flux<Message<String>> {
 
-    val logger = LoggerFactory.getLogger(MyKafkaProducer::class.java)
+    companion object {
+        private val LOGGER = LoggerFactory.getLogger(MyKafkaProducer::class.java)
+    }
 
-    val sink = Sinks.many().unicast().onBackpressureBuffer<Message<String>>()
+    private val sink = Sinks.many().unicast().onBackpressureBuffer<Message<String>>()
 
     fun produce(payload: String) {
-        logger.info(">>> KafkaProducer $payload")
+        LOGGER.info(">>> KafkaProducer $payload")
         sink.emitNext(createMessageWithTracing(payload), FAIL_FAST)
     }
 
     private fun createMessageWithTracing(payload: String): Message<String> {
         return MessagingSleuthOperators.handleOutputMessage(
-                beanFactory,
-                MessagingSleuthOperators.forInputMessage(beanFactory, GenericMessage(payload))
+            beanFactory,
+            MessagingSleuthOperators.forInputMessage(beanFactory, GenericMessage(payload))
         )
     }
 
-    override fun get() = sink.asFlux()
+    override fun invoke() = sink.asFlux()
 }
