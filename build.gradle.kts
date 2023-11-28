@@ -20,7 +20,7 @@ repositories {
   maven { url = uri("https://repo.spring.io/milestone") }
 }
 
-extra["springCloudVersion"] = "2021.0.8"
+val springCloudVersion = "2021.0.8"
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter")
@@ -39,7 +39,7 @@ dependencies {
 
 dependencyManagement {
   imports {
-    mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
+    mavenBom("org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion")
   }
 }
 
