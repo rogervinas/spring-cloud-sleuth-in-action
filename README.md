@@ -1,6 +1,6 @@
 ![CI](https://github.com/rogervinas/spring-cloud-sleuth-in-action/actions/workflows/gradle.yml/badge.svg)
 ![Java](https://img.shields.io/badge/Java-17-blue?labelColor=black)
-![Kotlin](https://img.shields.io/badge/Kotlin-1.9.21-blue?labelColor=black)
+![Kotlin](https://img.shields.io/badge/Kotlin-1.9.22-blue?labelColor=black)
 ![SpringBoot](https://img.shields.io/badge/SpringBoot-2.7.18-blue?labelColor=black)
 ![SpringCloud](https://img.shields.io/badge/SpringCloud-2021.0.8-blue?labelColor=black)
 
