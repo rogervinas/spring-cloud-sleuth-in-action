@@ -8,7 +8,7 @@ plugins {
   id("org.springframework.boot") version "2.7.18"
   id("io.spring.dependency-management") version "1.0.15.RELEASE"
   kotlin("jvm") version "1.9.23"
-  kotlin("plugin.spring") version "1.9.22"
+  kotlin("plugin.spring") version "1.9.23"
 }
 
 group = "com.rogervinas"
@@ -32,7 +32,7 @@ dependencies {
   implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
   implementation("org.jetbrains.kotlin:kotlin-reflect")
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-  implementation("org.testcontainers:testcontainers:1.19.6")
+  implementation("org.testcontainers:testcontainers:1.19.7")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.awaitility:awaitility:4.2.0")
 }
