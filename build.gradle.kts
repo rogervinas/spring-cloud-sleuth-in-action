@@ -34,7 +34,7 @@ dependencies {
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
   implementation("org.testcontainers:testcontainers:1.19.7")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
-  testImplementation("org.awaitility:awaitility:4.2.0")
+  testImplementation("org.awaitility:awaitility:4.2.1")
 }
 
 dependencyManagement {
