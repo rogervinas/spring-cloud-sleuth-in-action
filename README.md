@@ -18,59 +18,65 @@ To keep it simple everything will be executed within the same **Spring Boot Appl
 
 Let's follow these steps to execute the demo:
 
-* Start the **Spring Boot Application**:
+* Run docker-compose:
+```shell
+docker-compose up -d
+```
 
-    ```bash
-    SPRING_PROFILES_ACTIVE=docker-compose ./gradlew bootRun
-    ```
+* Start the **Spring Boot Application**:
+```shell
+./gradlew bootRun
+```
 
 * Consume from the **Kafka** topic `my.topic` with [kcat](https://github.com/edenhill/kcat):
-
-    ```bash
-    kcat -b localhost:9094 -C -t my.topic -f '%h %s\n'
-    ```
+```shell
+kcat -b localhost:9094 -C -t my.topic -f '%h %s\n'
+```
 
 * Execute a request to the first endpoint with [curl](https://curl.se/) or any other tool you like:
+```shell
+curl http://localhost:8080/request1?payload=hello \
+  -H 'X-B3-TraceId: aaaaaa1234567890' \
+  -H 'X-B3-SpanId: bbbbbb1234567890'
+```
 
-    The default format for [context propagation](https://docs.spring.io/spring-cloud-sleuth/docs/current/reference/html/project-features.html#features-context-propagation) is [B3](https://github.com/openzipkin/b3-propagation) so we use headers `X-B3-TraceId` and `X-B3-SpanId`
-    ```bash
-    curl http://localhost:8080/request1?payload=hello \
-      -H 'X-B3-TraceId: aaaaaa1234567890' \
-      -H 'X-B3-SpanId: bbbbbb1234567890'
-    ```
+Note: the default format for [context propagation](https://docs.spring.io/spring-cloud-sleuth/docs/current/reference/html/project-features.html#features-context-propagation) is [B3](https://github.com/openzipkin/b3-propagation), so we use headers `X-B3-TraceId` and `X-B3-SpanId`
 
-* Check application output:
-
-    All lines should share the same `traceId`
-
-    ```
-    Started MyApplicationKt in 44.739 seconds (JVM running for 49.324) - traceId ? spanId ? - main
-    >>> RestRequest1 hello  - traceId aaaaaa1234567890 spanId cf596e6281432fb9 - http-nio-8080-exec-7
-    >>> KafkaProducer hello - traceId aaaaaa1234567890 spanId cf596e6281432fb9 - http-nio-8080-exec-7
-    >>> KafkaConsumer hello - traceId aaaaaa1234567890 spanId 91e1b6b37334620c - KafkaConsumerDestination...
-    >>> RestRequest2 hello  - traceId aaaaaa1234567890 spanId a1ac0233664f5249 - http-nio-8080-exec-8
-    >>> RestRequest3 hello  - traceId aaaaaa1234567890 spanId bf384c3b4d97efe9 - http-nio-8080-exec-9
-    >>> RestRequest4 hello  - traceId aaaaaa1234567890 spanId c84470ce03e993f1 - http-nio-8080-exec-1
-    >>> AsyncService hello  - traceId aaaaaa1234567890 spanId acccead477b4e1c8 - task-3
-    ```
+* Check application output, all lines should share the same `traceId`
+```
+Started MyApplicationKt in 44.739 seconds (JVM running for 49.324) - traceId ? spanId ? - main
+>>> RestRequest1 hello  - traceId aaaaaa1234567890 spanId cf596e6281432fb9 - http-nio-8080-exec-7
+>>> KafkaProducer hello - traceId aaaaaa1234567890 spanId cf596e6281432fb9 - http-nio-8080-exec-7
+>>> KafkaConsumer hello - traceId aaaaaa1234567890 spanId 91e1b6b37334620c - KafkaConsumerDestination...
+>>> RestRequest2 hello  - traceId aaaaaa1234567890 spanId a1ac0233664f5249 - http-nio-8080-exec-8
+>>> RestRequest3 hello  - traceId aaaaaa1234567890 spanId bf384c3b4d97efe9 - http-nio-8080-exec-9
+>>> RestRequest4 hello  - traceId aaaaaa1234567890 spanId c84470ce03e993f1 - http-nio-8080-exec-1
+>>> AsyncService hello  - traceId aaaaaa1234567890 spanId acccead477b4e1c8 - task-3
+```
 
 * Check [kcat](https://github.com/edenhill/kcat) output:
-
-    ```
-    b3=aaaaaa1234567890-331986280d41ccdc-1,
-    nativeHeaders={"b3":["aaaaaa1234567890-331986280d41ccdc-1"]},
-    contentType=application/json,
-    spring_json_header_types={
-        "b3":"java.lang.String",
-        "nativeHeaders":"org.springframework.util.LinkedMultiValueMap",
-        "contentType":"java.lang.String"
-    }
-    hello
-    ```
+```
+b3=aaaaaa1234567890-331986280d41ccdc-1,
+nativeHeaders={"b3":["aaaaaa1234567890-331986280d41ccdc-1"]},
+contentType=application/json,
+spring_json_header_types={
+    "b3":"java.lang.String",
+    "nativeHeaders":"org.springframework.util.LinkedMultiValueMap",
+    "contentType":"java.lang.String"
+}
+hello
+```
 
 * Check [zipkin](https://zipkin.io/) at [http://localhost:9411/zipkin/](http://localhost:9411/zipkin/)
 
 ![Zipkin](doc/zipkin.png)
+
+* Stop the **Spring Boot Application** just with CTRL-C
+
+* Stop docker-compose:
+```shell
+docker-compose down
+```
 
 ## Show me the code!
 
@@ -267,29 +273,17 @@ spring:
     base-url: "http://localhost:9411"
 ```
 
-### Docker compose
-
-We use docker-compose with 3 containers: [kafka](https://hub.docker.com/r/wurstmeister/kafka), [zookeeper](https://hub.docker.com/r/wurstmeister/zookeeper/) and [zipkin](https://hub.docker.com/r/openzipkin/zipkin-slim)
-
-You can either:
-
-* Execute `docker-compose up -d` separately and then run the application executing `./gradlew bootRun`
-
-or
-
-* Execute `SPRING_PROFILES_ACTIVE=docker-compose ./gradlew bootRun` and the application will start docker-compose using [TestContainers Docker Compose Module](https://www.testcontainers.org/modules/docker_compose/)
-
 ### Test
 
 One easy way to test the demo is running a SpringBootTest with an [OutputCaptureExtension](https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/test/system/OutputCaptureExtension.html) and verify that all logs contain the expected **traceId** and **spanId** values: 
 
 ```kotlin
 @SpringBootTest(webEnvironment = DEFINED_PORT)
+@Testcontainers
 @ExtendWith(OutputCaptureExtension::class)
-@ActiveProfiles("docker-compose")
-class MyApplicationShould {
+class MyApplicationIntegrationTest {
   @Test
-  fun `propagate tracing`(log: CapturedOutput) {
+  fun `should propagate tracing`(log: CapturedOutput) {
     val traceId = "edb77ece416b3196"
     val spanId = "c58ac2aa66d238b9"
 
@@ -313,5 +307,7 @@ class MyApplicationShould {
   }
 }
 ```
+
+Run test with `./gradlew test`
 
 That's it! Happy coding! 💙
