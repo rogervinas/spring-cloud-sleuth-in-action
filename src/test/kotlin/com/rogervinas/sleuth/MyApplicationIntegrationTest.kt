@@ -1,5 +1,6 @@
 package com.rogervinas.sleuth
 
+import com.rogervinas.sleuth.helper.DockerComposeContainerHelper
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.Awaitility.await
 import org.awaitility.Durations.ONE_SECOND
@@ -16,16 +17,23 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus.OK
 import org.springframework.http.ResponseEntity
-import org.springframework.test.context.ActiveProfiles
 import org.springframework.web.client.RestTemplate
+import org.testcontainers.junit.jupiter.Container
+import org.testcontainers.junit.jupiter.Testcontainers
 import java.util.function.Consumer
 import java.util.regex.Pattern
 import java.util.stream.Collectors
 
 @SpringBootTest(webEnvironment = DEFINED_PORT)
+@Testcontainers
 @ExtendWith(OutputCaptureExtension::class)
-@ActiveProfiles("docker-compose")
-class MyApplicationShould {
+class MyApplicationIntegrationTest {
+
+    companion object {
+
+        @Container
+        val container = DockerComposeContainerHelper().createContainer()
+    }
 
     @LocalServerPort
     var port: Int = 0
@@ -33,7 +41,7 @@ class MyApplicationShould {
     val rest = RestTemplate()
 
     @Test
-    fun `propagate tracing`(log: CapturedOutput) {
+    fun `should propagate tracing`(log: CapturedOutput) {
         val traceId = "edb77ece416b3196"
         val spanId = "c58ac2aa66d238b9"
 
