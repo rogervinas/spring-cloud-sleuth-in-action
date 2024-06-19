@@ -69,14 +69,14 @@ hello
 
 * Check [zipkin](https://zipkin.io/) at [http://localhost:9411/zipkin/](http://localhost:9411/zipkin/)
 
+![Zipkin](doc/zipkin.png)
+
 * Stop the **Spring Boot Application** just with CTRL-C
 
 * Stop docker-compose:
 ```shell
 docker-compose down
 ```
-
-![Zipkin](doc/zipkin.png)
 
 ## Show me the code!
 
