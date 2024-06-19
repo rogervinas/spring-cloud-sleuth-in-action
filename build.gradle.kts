@@ -21,6 +21,7 @@ repositories {
 }
 
 val springCloudVersion = "2021.0.8"
+val testContainersVersion = "1.19.8"
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter")
@@ -32,7 +33,8 @@ dependencies {
   implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
   implementation("org.jetbrains.kotlin:kotlin-reflect")
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-  implementation("org.testcontainers:testcontainers:1.19.8")
+  testImplementation("org.testcontainers:testcontainers:$testContainersVersion")
+  testImplementation("org.testcontainers:junit-jupiter:$testContainersVersion")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.awaitility:awaitility:4.2.1")
 }
