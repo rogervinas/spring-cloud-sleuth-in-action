@@ -28,66 +28,74 @@ import java.util.stream.Collectors
 @Testcontainers
 @ExtendWith(OutputCaptureExtension::class)
 class MyApplicationIntegrationTest {
+  companion object {
+    @Container
+    val container = DockerComposeContainerHelper().createContainer()
+  }
 
-    companion object {
+  @LocalServerPort
+  var port: Int = 0
 
-        @Container
-        val container = DockerComposeContainerHelper().createContainer()
-    }
+  val rest = RestTemplate()
 
-    @LocalServerPort
-    var port: Int = 0
+  @Test
+  fun `should propagate tracing`(log: CapturedOutput) {
+    val traceId = "edb77ece416b3196"
+    val spanId = "c58ac2aa66d238b9"
 
-    val rest = RestTemplate()
+    val response = request1(traceId, spanId)
 
-    @Test
-    fun `should propagate tracing`(log: CapturedOutput) {
-        val traceId = "edb77ece416b3196"
-        val spanId = "c58ac2aa66d238b9"
+    assertThat(response.statusCode).isEqualTo(OK)
+    assertThat(response.body).isEqualTo("ok")
 
-        val response = request1(traceId, spanId)
+    val logLines =
+      await()
+        .atMost(TEN_SECONDS)
+        .pollDelay(ONE_SECOND)
+        .until({ parseLogLines(log) }, { it.size >= 7 })
 
-        assertThat(response.statusCode).isEqualTo(OK)
-        assertThat(response.body).isEqualTo("ok")
+    assertThatLogLineContainsMessageAndTraceId(logLines[0], "RestRequest1 hello", traceId)
+    assertThatLogLineContainsMessageAndTraceId(logLines[1], "KafkaProducer hello", traceId)
+    assertThatLogLineContainsMessageAndTraceId(logLines[2], "KafkaConsumer hello", traceId)
+    assertThatLogLineContainsMessageAndTraceId(logLines[3], "RestRequest2 hello", traceId)
+    assertThatLogLineContainsMessageAndTraceId(logLines[4], "RestRequest3 hello", traceId)
+    assertThatLogLineContainsMessageAndTraceId(logLines[5], "RestRequest4 hello", traceId)
+    assertThatLogLineContainsMessageAndTraceId(logLines[6], "AsyncService hello", traceId)
+  }
 
-        val logLines = await()
-            .atMost(TEN_SECONDS)
-            .pollDelay(ONE_SECOND)
-            .until({ parseLogLines(log) }, { it.size >= 7 })
+  private fun request1(
+    traceId: String,
+    spanId: String,
+  ): ResponseEntity<String> {
+    val requestUrl = "http://localhost:$port/request1?payload=hello"
+    val requestHeaders = HttpHeaders()
+    requestHeaders["X-B3-TraceId"] = traceId
+    requestHeaders["X-B3-SpanId"] = spanId
+    val request = HttpEntity<Unit>(requestHeaders)
+    return rest.exchange(requestUrl, HttpMethod.GET, request, String::class.java)
+  }
 
-        assertThatLogLineContainsMessageAndTraceId(logLines[0], "RestRequest1 hello", traceId)
-        assertThatLogLineContainsMessageAndTraceId(logLines[1], "KafkaProducer hello", traceId)
-        assertThatLogLineContainsMessageAndTraceId(logLines[2], "KafkaConsumer hello", traceId)
-        assertThatLogLineContainsMessageAndTraceId(logLines[3], "RestRequest2 hello", traceId)
-        assertThatLogLineContainsMessageAndTraceId(logLines[4], "RestRequest3 hello", traceId)
-        assertThatLogLineContainsMessageAndTraceId(logLines[5], "RestRequest4 hello", traceId)
-        assertThatLogLineContainsMessageAndTraceId(logLines[6], "AsyncService hello", traceId)
-    }
+  private fun assertThatLogLineContainsMessageAndTraceId(
+    logLine: LogLine,
+    msg: String,
+    traceId: String,
+  ) {
+    assertThat(logLine).satisfies(
+      Consumer {
+        assertThat(it.msg).isEqualTo(msg)
+        assertThat(it.traceId).isEqualTo(traceId)
+        assertThat(it.spanId).isNotBlank
+      },
+    )
+  }
 
-    private fun request1(traceId: String, spanId: String): ResponseEntity<String> {
-        val requestUrl = "http://localhost:$port/request1?payload=hello"
-        val requestHeaders = HttpHeaders()
-        requestHeaders["X-B3-TraceId"] = traceId
-        requestHeaders["X-B3-SpanId"] = spanId
-        val request = HttpEntity<Unit>(requestHeaders)
-        return rest.exchange(requestUrl, HttpMethod.GET, request, String::class.java)
-    }
-
-    private fun assertThatLogLineContainsMessageAndTraceId(logLine: LogLine, msg: String, traceId: String) {
-        assertThat(logLine).satisfies(Consumer {
-            assertThat(it.msg).isEqualTo(msg)
-            assertThat(it.traceId).isEqualTo(traceId)
-            assertThat(it.spanId).isNotBlank
-        })
-    }
-
-    private fun parseLogLines(log: CapturedOutput): List<LogLine> {
-        return log.all.split(System.lineSeparator()).stream()
-            .map { Pattern.compile(">>> (.+) - traceId (.+) spanId (.+) - .+").matcher(it) }
-            .filter { it.matches() }
-            .map { LogLine(it.group(1), it.group(2), it.group(3)) }
-            .collect(Collectors.toList())
-    }
+  private fun parseLogLines(log: CapturedOutput): List<LogLine> {
+    return log.all.split(System.lineSeparator()).stream()
+      .map { Pattern.compile(">>> (.+) - traceId (.+) spanId (.+) - .+").matcher(it) }
+      .filter { it.matches() }
+      .map { LogLine(it.group(1), it.group(2), it.group(3)) }
+      .collect(Collectors.toList())
+  }
 }
 
 class LogLine(val msg: String, val traceId: String, val spanId: String)

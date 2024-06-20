@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.RequestParam
 
 @FeignClient(name = "request3", url = "http://localhost:\${server.port}")
 interface MyFeignClient {
-    @RequestMapping(method = [RequestMethod.GET], path = ["/request3"])
-    fun request3(@RequestParam("payload") payload: String): String
+  @RequestMapping(method = [RequestMethod.GET], path = ["/request3"])
+  fun request3(
+    @RequestParam("payload") payload: String,
+  ): String
 }

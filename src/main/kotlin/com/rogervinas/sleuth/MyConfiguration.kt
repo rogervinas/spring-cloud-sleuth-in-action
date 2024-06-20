@@ -7,10 +7,9 @@ import org.springframework.web.reactive.function.client.WebClient
 
 @Configuration
 class MyConfiguration {
+  @Bean
+  fun restTemplate() = RestTemplate()
 
-    @Bean
-    fun restTemplate() = RestTemplate()
-
-    @Bean
-    fun webClient() = WebClient.create()
+  @Bean
+  fun webClient() = WebClient.create()
 }
