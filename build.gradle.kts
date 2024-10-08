@@ -20,7 +20,7 @@ repositories {
 }
 
 val springCloudVersion = "2021.0.8"
-val testContainersVersion = "1.20.1"
+val testContainersVersion = "1.20.2"
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter")
