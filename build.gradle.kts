@@ -8,7 +8,7 @@ plugins {
   id("io.spring.dependency-management") version "1.0.15.RELEASE"
   kotlin("jvm") version "2.0.21"
   kotlin("plugin.spring") version "2.0.21"
-  id("org.jlleitschuh.gradle.ktlint") version "12.1.1"
+  id("org.jlleitschuh.gradle.ktlint") version "12.1.2"
 }
 
 group = "com.rogervinas"
@@ -20,7 +20,7 @@ repositories {
 }
 
 val springCloudVersion = "2021.0.8"
-val testContainersVersion = "1.20.3"
+val testContainersVersion = "1.20.4"
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter")
