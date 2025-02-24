@@ -19,7 +19,7 @@ repositories {
 }
 
 val springCloudVersion = "2021.0.8"
-val testContainersVersion = "1.20.4"
+val testContainersVersion = "1.20.5"
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter")
@@ -34,7 +34,7 @@ dependencies {
   testImplementation("org.testcontainers:testcontainers:$testContainersVersion")
   testImplementation("org.testcontainers:junit-jupiter:$testContainersVersion")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
-  testImplementation("org.awaitility:awaitility:4.2.2")
+  testImplementation("org.awaitility:awaitility:4.3.0")
 }
 
 dependencyManagement {
