@@ -30,7 +30,7 @@ docker-compose up -d
 
 * Consume from the **Kafka** topic `my.topic` with [kcat](https://github.com/edenhill/kcat):
 ```shell
-kcat -b localhost:9094 -C -t my.topic -f '%h %s\n'
+kcat -b localhost:9092 -C -t my.topic -f '%h %s\n'
 ```
 
 * Execute a request to the first endpoint with [curl](https://curl.se/) or any other tool you like:
@@ -138,7 +138,7 @@ In this demo we use [Spring Cloud Stream](https://docs.spring.io/spring-cloud-st
         stream:
           kafka:
             binder:
-              brokers: "localhost:9094"
+              brokers: "localhost:9092"
           bindings:
             consumer-in-0:
               group: ${spring.application.name}
