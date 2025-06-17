@@ -12,7 +12,7 @@ spring:
     stream:
       kafka:
         binder:
-          brokers: "localhost:9094"
+          brokers: "localhost:9092"
       bindings:
         consumer-in-0:
           group: ${spring.application.name}
