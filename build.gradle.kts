@@ -6,8 +6,8 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED
 plugins {
   id("org.springframework.boot") version "2.7.18"
   id("io.spring.dependency-management") version "1.0.15.RELEASE"
-  kotlin("jvm") version "2.1.21"
-  kotlin("plugin.spring") version "2.1.21"
+  kotlin("jvm") version "2.2.0"
+  kotlin("plugin.spring") version "2.2.0"
 }
 
 group = "com.rogervinas"
@@ -19,7 +19,7 @@ repositories {
 }
 
 val springCloudVersion = "2021.0.8"
-val testContainersVersion = "1.21.1"
+val testContainersVersion = "1.21.2"
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter")
