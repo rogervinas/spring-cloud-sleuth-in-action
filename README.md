@@ -2,13 +2,12 @@
 ![Java](https://img.shields.io/badge/Java-17-blue?labelColor=black)
 ![Kotlin](https://img.shields.io/badge/Kotlin-2.x-blue?labelColor=black)
 ![SpringBoot](https://img.shields.io/badge/SpringBoot-2.7.18-blue?labelColor=black)
-![SpringCloud](https://img.shields.io/badge/SpringCloud-2021.0.8-blue?labelColor=black)
 
 # Spring Cloud Sleuth in action
 
 [Spring Cloud Sleuth](https://docs.spring.io/spring-cloud-sleuth/docs/current/reference/html/index.html) is the solution for [distributed tracing](https://opentracing.io/docs/overview/what-is-tracing/) provided by **Spring** and comes with a bunch of useful [integrations](https://docs.spring.io/spring-cloud-sleuth/docs/current/reference/html/integrations.html#sleuth-integration) out of the box
 
-I've created this [spring-cloud-sleuth-in-action](https://github.com/rogervinas/spring-cloud-sleuth-in-action) sample to use some of these integrations executing the following flow:
+I've created this sample to use some of these integrations executing the following flow:
 
 ![Demo](doc/demo.png)
 
